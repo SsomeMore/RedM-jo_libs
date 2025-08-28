@@ -74,7 +74,6 @@ function jo.framework:createInventory(invName, name, invConfig)
     name = name,
     invConfig = invConfig
   }
-  return true
 end
 
 ---@param invName string unique ID of the inventory

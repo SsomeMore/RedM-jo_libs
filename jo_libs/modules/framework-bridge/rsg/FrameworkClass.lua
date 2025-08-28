@@ -960,7 +960,7 @@ function jo.framework:createUser(source, data, spawnCoordinate, isDead)
     }
   }
   RSGCore.Player.CheckPlayerData(source, convertData)
-  jo.triggerEvent.server(source, "rsg-appearance:server:SaveSkin", data.skin, data.comps)
+  jo.triggerEvent.server(source, "jkt-appearance:server:SaveSkin", data.skin, data.comps)
 end
 
 -------------

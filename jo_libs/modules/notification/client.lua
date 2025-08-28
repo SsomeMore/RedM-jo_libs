@@ -31,10 +31,69 @@ function UiFeedPostTwoTextShard(...)
   return Citizen.InvokeNative(0xA6F4216AB10EB08E, ...)
 end
 
+-- Register existing events
 RegisterNetEvent(GetCurrentResourceName() .. ":client:notif",
   function(text, dict, icon, color, duration, soundset_ref, soundset_name)
     jo.notif.right(text, dict, icon, color, duration, soundset_ref, soundset_name)
   end)
+
+RegisterNetEvent(GetCurrentResourceName() .. ":client:notifLeft",
+  function(title, subTitle, dict, icon, color, duration, soundset_ref, soundset_name)
+    jo.notif.left(title, subTitle, dict, icon, color, duration, soundset_ref, soundset_name)
+  end)
+
+RegisterNetEvent(GetCurrentResourceName() .. ":client:simpleTop", function(title, subtitle, duration)
+  jo.notif.simpleTop(title, subtitle, duration)
+end)
+
+RegisterNetEvent(GetCurrentResourceName() .. ":client:notifPrint", function(...)
+  print(...)
+end)
+
+-- Register new events for additional notification types
+RegisterNetEvent(GetCurrentResourceName() .. ":client:tip", function(tipMessage, duration)
+  jo.notif.tip(tipMessage, duration)
+end)
+
+RegisterNetEvent(GetCurrentResourceName() .. ":client:top", function(message, location, duration)
+  jo.notif.top(message, location, duration)
+end)
+
+RegisterNetEvent(GetCurrentResourceName() .. ":client:rightTip", function(tipMessage, duration)
+  jo.notif.rightTip(tipMessage, duration)
+end)
+
+RegisterNetEvent(GetCurrentResourceName() .. ":client:objective", function(message, duration)
+  jo.notif.objective(message, duration)
+end)
+
+RegisterNetEvent(GetCurrentResourceName() .. ":client:basicTop", function(text, duration)
+  jo.notif.basicTop(text, duration)
+end)
+
+RegisterNetEvent(GetCurrentResourceName() .. ":client:center", function(text, duration, text_color)
+  jo.notif.center(text, duration, text_color)
+end)
+
+RegisterNetEvent(GetCurrentResourceName() .. ":client:bottomRight", function(text, duration)
+  jo.notif.bottomRight(text, duration)
+end)
+
+RegisterNetEvent(GetCurrentResourceName() .. ":client:fail", function(title, subtitle, duration)
+  jo.notif.fail(title, subtitle, duration)
+end)
+
+RegisterNetEvent(GetCurrentResourceName() .. ":client:dead", function(title, audioRef, audioName, duration)
+  jo.notif.dead(title, audioRef, audioName, duration)
+end)
+
+RegisterNetEvent(GetCurrentResourceName() .. ":client:update", function(title, message, duration)
+  jo.notif.update(title, message, duration)
+end)
+
+RegisterNetEvent(GetCurrentResourceName() .. ":client:warning", function(title, message, audioRef, audioName, duration)
+  jo.notif.warning(title, message, audioRef, audioName, duration)
+end)
 
 --- A function to display a successful notification
 ---@param text string (The text of the notification)
@@ -87,16 +146,8 @@ function jo.notif.right(text, dict, icon, color, duration, soundset_ref, soundse
   struct2:SetInt64(8 * 2, bigInt(message.dict))
   struct2:SetInt64(8 * 3, bigInt(joaat(message.icon)))
   struct2:SetInt64(8 * 5, bigInt(joaat(message.color)))
-  --if showquality then
-  --struct2:SetInt32(8 * 6, quality or 1)
-  --end
   UiFeedPostSampleToastRight(struct1:Buffer(), struct2:Buffer(), 1)
 end
-
-RegisterNetEvent(GetCurrentResourceName() .. ":client:notifLeft",
-  function(title, subTitle, dict, icon, color, duration, soundset_ref, soundset_name)
-    jo.notif.left(title, subTitle, dict, icon, color, duration, soundset_ref, soundset_name)
-  end)
 
 --- Notification on the left with title, icon, color and sound
 ---@param title string (The title of the notification)
@@ -155,10 +206,173 @@ function jo.notif.simpleTop(title, subtitle, duration)
   UiFeedPostTwoTextShard(structConfig:Buffer(), structData:Buffer(), 1, 1)
 end
 
-RegisterNetEvent(GetCurrentResourceName() .. ":client:simpleTop", function(title, subtitle, duration)
-  jo.notif.simpleTop(title, subtitle, duration)
-end)
+--- NotifyTip
+---@param tipMessage string
+---@param duration? number -- default 3000
+function jo.notif.tip(tipMessage, duration)
+  local structConfig = DataView.ArrayBuffer(8 * 7)
+  structConfig:SetInt32(8 * 0, tonumber(duration or 3000))
+  structConfig:SetInt32(8 * 1, 0)
+  structConfig:SetInt32(8 * 2, 0)
+  structConfig:SetInt32(8 * 3, 0)
 
-RegisterNetEvent(GetCurrentResourceName() .. ":client:notifPrint", function(...)
-  print(...)
-end)
+  local structData = DataView.ArrayBuffer(8 * 3)
+  structData:SetUint64(8 * 1, bigInt(VarString(10, "LITERAL_STRING", tipMessage)))
+
+  Citizen.InvokeNative(0x049D5C615BD38BAD, structConfig:Buffer(), structData:Buffer(), 1)
+end
+
+--- NotifyTop
+---@param message string
+---@param location string
+---@param duration? number -- default 3000
+function jo.notif.top(message, location, duration)
+  local structConfig = DataView.ArrayBuffer(8 * 7)
+  structConfig:SetInt32(8 * 0, tonumber(duration or 3000))
+
+  local structData = DataView.ArrayBuffer(8 * 5)
+  structData:SetInt64(8 * 1, bigInt(VarString(10, "LITERAL_STRING", location)))
+  structData:SetInt64(8 * 2, bigInt(VarString(10, "LITERAL_STRING", message)))
+
+  Citizen.InvokeNative(0xD05590C1AB38F068, structConfig:Buffer(), structData:Buffer(), 0, 1)
+end
+
+--- NotifyRightTip
+---@param tipMessage string
+---@param duration? number -- default 3000
+function jo.notif.rightTip(tipMessage, duration)
+  local structConfig = DataView.ArrayBuffer(8 * 7)
+  structConfig:SetInt32(8 * 0, tonumber(duration or 3000))
+
+  local structData = DataView.ArrayBuffer(8 * 3)
+  structData:SetInt64(8 * 1, bigInt(VarString(10, "LITERAL_STRING", tipMessage)))
+
+  Citizen.InvokeNative(0xB2920B9760F0F36B, structConfig:Buffer(), structData:Buffer(), 1)
+end
+
+--- DisplayObjective
+---@param message string
+---@param duration? number -- default 3000
+function jo.notif.objective(message, duration)
+  Citizen.InvokeNative("0xDD1232B332CBB9E7", 3, 1, 0)
+
+  local structConfig = DataView.ArrayBuffer(8 * 7)
+  structConfig:SetInt32(8 * 0, tonumber(duration or 3000))
+
+  local structData = DataView.ArrayBuffer(8 * 3)
+  local strMessage = VarString(10, "LITERAL_STRING", message)
+  structData:SetInt64(8 * 1, bigInt(strMessage))
+
+  Citizen.InvokeNative(0xCEDBF17EFCC0E4A4, structConfig:Buffer(), structData:Buffer(), 1)
+end
+
+--- NotifyBasicTop
+---@param text string
+---@param duration? number -- default 3000
+function jo.notif.basicTop(text, duration)
+  local structConfig = DataView.ArrayBuffer(8 * 7)
+  structConfig:SetInt32(8 * 0, tonumber(duration or 3000))
+
+  local structData = DataView.ArrayBuffer(8 * 7)
+  structData:SetInt64(8 * 1, bigInt(VarString(10, "LITERAL_STRING", text)))
+
+  Citizen.InvokeNative(0x7AE0589093A2E088, structConfig:Buffer(), structData:Buffer(), 1)
+end
+
+--- NotifyCenter
+---@param text string
+---@param duration? number -- default 3000
+---@param text_color? string -- default COLOR_PURE_WHITE
+function jo.notif.center(text, duration, text_color)
+  local structConfig = DataView.ArrayBuffer(8 * 7)
+  structConfig:SetInt32(8 * 0, tonumber(duration or 3000))
+
+  local structData = DataView.ArrayBuffer(8 * 4)
+  structData:SetInt64(8 * 1, bigInt(VarString(10, "LITERAL_STRING", text)))
+  structData:SetInt64(8 * 2, bigInt(joaat(text_color or "COLOR_PURE_WHITE")))
+
+  Citizen.InvokeNative(0x893128CDB4B81FBB, structConfig:Buffer(), structData:Buffer(), 1)
+end
+
+--- NotifyBottomRight
+---@param text string
+---@param duration? number -- default 3000
+function jo.notif.bottomRight(text, duration)
+  local structConfig = DataView.ArrayBuffer(8 * 7)
+  structConfig:SetInt32(8 * 0, tonumber(duration or 3000))
+
+  local structData = DataView.ArrayBuffer(8 * 5)
+  structData:SetInt64(8 * 1, bigInt(VarString(10, "LITERAL_STRING", text)))
+
+  Citizen.InvokeNative(0x2024F4F333095FB1, structConfig:Buffer(), structData:Buffer(), 1)
+end
+
+--- NotifyFail
+---@param title string
+---@param subtitle string
+---@param duration? number -- default 3000
+function jo.notif.fail(title, subtitle, duration)
+  local structConfig = DataView.ArrayBuffer(8 * 5)
+
+  local structData = DataView.ArrayBuffer(8 * 9)
+  structData:SetInt64(8 * 1, bigInt(VarString(10, "LITERAL_STRING", title)))
+  structData:SetInt64(8 * 2, bigInt(VarString(10, "LITERAL_STRING", subtitle)))
+
+  local result = Citizen.InvokeNative(0x9F2CC2439A04E7BA, structConfig:Buffer(), structData:Buffer(), 1)
+  Wait(duration or 3000)
+  Citizen.InvokeNative(0x00A15B94CBA4F76F, result)
+end
+
+--- NotifyDead
+---@param title string
+---@param audioRef string
+---@param audioName string
+---@param duration? number -- default 3000
+function jo.notif.dead(title, audioRef, audioName, duration)
+  local structConfig = DataView.ArrayBuffer(8 * 5)
+
+  local structData = DataView.ArrayBuffer(8 * 9)
+  structData:SetInt64(8 * 1, bigInt(VarString(10, "LITERAL_STRING", title)))
+  structData:SetInt64(8 * 2, bigInt(VarString(10, "LITERAL_STRING", audioRef)))
+  structData:SetInt64(8 * 3, bigInt(VarString(10, "LITERAL_STRING", audioName)))
+
+  local result = Citizen.InvokeNative(0x815C4065AE6E6071, structConfig:Buffer(), structData:Buffer(), 1)
+  Wait(duration or 3000)
+  Citizen.InvokeNative(0x00A15B94CBA4F76F, result)
+end
+
+--- NotifyUpdate
+---@param title string
+---@param message string
+---@param duration? number -- default 3000
+function jo.notif.update(title, message, duration)
+  local structConfig = DataView.ArrayBuffer(8 * 5)
+
+  local structData = DataView.ArrayBuffer(8 * 9)
+  structData:SetInt64(8 * 1, bigInt(VarString(10, "LITERAL_STRING", title)))
+  structData:SetInt64(8 * 2, bigInt(VarString(10, "LITERAL_STRING", message)))
+
+  local result = Citizen.InvokeNative(0x339E16B41780FC35, structConfig:Buffer(), structData:Buffer(), 1)
+  Wait(duration or 3000)
+  Citizen.InvokeNative(0x00A15B94CBA4F76F, result)
+end
+
+--- NotifyWarning
+---@param title string
+---@param message string
+---@param audioRef string
+---@param audioName string
+---@param duration? number -- default 3000
+function jo.notif.warning(title, message, audioRef, audioName, duration)
+  local structConfig = DataView.ArrayBuffer(8 * 5)
+
+  local structData = DataView.ArrayBuffer(8 * 9)
+  structData:SetInt64(8 * 1, bigInt(VarString(10, "LITERAL_STRING", title)))
+  structData:SetInt64(8 * 2, bigInt(VarString(10, "LITERAL_STRING", message)))
+  structData:SetInt64(8 * 3, bigInt(VarString(10, "LITERAL_STRING", audioRef)))
+  structData:SetInt64(8 * 4, bigInt(VarString(10, "LITERAL_STRING", audioName)))
+
+  local result = Citizen.InvokeNative(0x339E16B41780FC35, structConfig:Buffer(), structData:Buffer(), 1)
+  Wait(duration or 3000)
+  Citizen.InvokeNative(0x00A15B94CBA4F76F, result)
+end
